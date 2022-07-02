@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-
-# from .views import SockList
+from sock import views
+from .views import SockList
 
 # router = DefaultRouter()
 # router.register(r"sock", SockList)
@@ -10,10 +10,8 @@ from rest_framework.routers import DefaultRouter
 #     path("", include(router.urls))
 # ]
 
-from sock import views
-
 urlpatterns = [
-    path("sock/", views.sock_list),
+    path("sock/", views.SockList.as_view()),
     path("sock/<int:pk>", views.sock_detail),
 
 ]

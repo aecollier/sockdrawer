@@ -1,6 +1,6 @@
 # from django.shortcuts import render
-# from django_filters.rest_framework import DjangoFilterBackend
-# from rest_framework import generics
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics
 # from rest_framework import viewsets
 # from rest_framework.response import Response
 # from .models import Sock
@@ -19,25 +19,34 @@ from rest_framework.response import Response
 from .models import Sock
 from .serializers import SockSerializer
 
-@api_view(['GET', 'POST'])
-def sock_list(request):
+class SockList(generics.ListCreateAPIView):
     '''
-    List all socks, or create a new sock.
+    Should list all socks with filtering abilities and create sock (less certain on the create).
     '''
-    if request.method == 'GET':
-        socks = Sock.objects.all()
-        serializer = SockSerializer(socks, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    queryset = Sock.objects.all()
+    serializer_class = SockSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['type', 'hasHole']
+
+# @api_view(['GET', 'POST'])
+# def sock_list(request):
+#     '''
+#     List all socks, or create a new sock.
+#     '''
+#     if request.method == 'GET':
+#         socks = Sock.objects.all()
+#         serializer = SockSerializer(socks, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    elif request.method == 'POST':
-        serializer = SockSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        error_msg = {'error':'Required field missing'}
-        return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+#     elif request.method == 'POST':
+#         serializer = SockSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         error_msg = {'error':'Required field missing'}
+#         return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
+#     else:
+#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 @api_view(['GET','PUT','PATCH','DELETE'])
 def sock_detail(request, pk):
