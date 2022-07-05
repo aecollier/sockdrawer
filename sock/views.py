@@ -28,9 +28,7 @@ class SockList(generics.ListCreateAPIView):
         error_msg = {'error':'Required field missing'}
         return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
 
-    # Making some assumptions that attempting other methods returns 405 - not sure 
-    # how to implement that explicitly within the generic api class view. Had it explicitly implemented
-    # with function based view first, as below.
+    # Was nervous at first to not handle the 405 return explicitly, but it seems to be a built in behavior!
 
 
 @api_view(['GET','PUT','PATCH','DELETE'])
@@ -38,7 +36,7 @@ def sock_detail(request, id):
     '''
     Retrieve, update, overwrite, or delete a sock.
     '''
-    # Decided to keep the more verbose function api views here, as I like that I can be exact with error messages and codes.
+    # Decided to keep the more verbose function APIView here, as I like that I can be exact with error messages and codes.
     try:
         sock = Sock.objects.get(id=id)
     except Sock.DoesNotExist:
@@ -58,10 +56,10 @@ def sock_detail(request, id):
         return Response({"error":"Required field missing"}, status=status.HTTP_400_BAD_REQUEST)
     
     elif request.method == 'PATCH':
-        serializer = SockSerializer(sock, data=request.data, partial=True) # partial is what allows this to be a patch method
+        serializer = SockSerializer(sock, data=request.data, partial=True) # partial=True makes this a PATCH
         # I'm a little unclear on the error handling in this one. I interpreted it as
         # if neither type or hasHole are included (an empty request body), return 400. Including partial=True seems to allow
-        # an empty request body to still be marked valid, so it never hits the second return. I'm catching neither specified
+        # an empty request body to still be marked valid, so it never hits the second return. I'm catching the neither specified
         # conditon by checking the len of request.data to make sure it's not empty. 
         if serializer.is_valid() and len(request.data) > 0: 
             serializer.save()
@@ -86,10 +84,10 @@ def pair_list(request):
         # filter for socks without holes
         socks = Sock.objects.filter(hasHole=False)
         
-        # create a dictionary mapping id to color to make sock data more Pythonic to work with (what my brain needs, for now)
+        # create a dictionary mapping id to color to make sock data easier to manipulate (for me)
         types = {t.id:t.type for t in socks} 
 
-        # count how many socks of each type exist
+        # count how many socks of each type there are
         counts = Counter(list(types.values()))
 
         pairs_obj = [] # a list of pair objects
