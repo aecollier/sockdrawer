@@ -23,7 +23,6 @@ Note the (socksenv) in front of the prompt. This indicates that this terminal se
 
 Once pip has finished downloading the dependencies:
 ```
-(socksenv)$ cd sockdrawer
 (socksenv)$ python manage.py runserver
 ```
 
