@@ -6,4 +6,4 @@ class Sock(models.Model):
 
 class Pair(models.Model):
     type = models.CharField(max_length=100)
-    socks = models.JSONField(max_length=100)
+    socks = models.JSONField()
