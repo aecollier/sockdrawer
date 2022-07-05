@@ -85,53 +85,41 @@ def pair_list(request):
     if request.method == 'GET':
         # filter for socks without holes
         socks = Sock.objects.filter(hasHole=False)
-        # Get a dictionary mapping id to color (this is my way to work with the queryset but not sure it's the smartest as it requires conversion back later)
-        types = {t.id:t.type for t in Sock.objects.all()} 
-        #print(types) # {1: 'yellow', 2: 'black', 3: 'green', 4: 'blue', 5: 'blue'}
-        # get a counter of how many there are of each type
+        
+        # create a dictionary mapping id to color to make sock data more Pythonic to work with (what my brain needs, for now)
+        types = {t.id:t.type for t in socks} 
+
+        # count how many socks of each type exist
         counts = Counter(list(types.values()))
-        #print(counts) # Counter({'blue': 2, 'yellow': 1, 'black': 1, 'green': 1})
-        pairs_obj = [] # to hold list of JSON objects
-        dic_one_type = {} # To represent a JSON object with type and socks
-        id_list = [] # list of id's in sock pairs
+
+        pairs_obj = [] # a list of pair objects
+        dic_one_type = {} # a dictionary representing a pair instance with "type" and "socks" keys
+        id_list = [] # a list of id's in a sock pair
 
         for k,v in counts.items():
             if v>=2:
-                k_socks = Sock.objects.filter(type=k) # query for sock of k type
-                print(k_socks)
-                unpaired_socks = v # get number of socks we start with
+                k_socks = Sock.objects.filter(type=k) # query for socks of k type
+                unpaired_socks = v # get total number of socks to start with
                 while unpaired_socks > 1:
-                    id_list.append(k_socks[0].id)
+                    id_list.append(k_socks[0].id) # add two socks to a pair
                     id_list.append(k_socks[1].id)
-                    k_socks=k_socks[2:] #chop off the two we just looked at, maybe?
+                    k_socks=k_socks[2:] # chop off the two we just added, to ensure they don't get added more than once
                     dic_one_type["type"] = k
                     dic_one_type["socks"] = id_list
-                    if dic_one_type not in pairs_obj:
+                    if dic_one_type not in pairs_obj: # make sure no duplicate entries
                         pairs_obj.append(dic_one_type)
                     unpaired_socks -= 2 # decrement unpaired sock count by 2
                     id_list = [] # reset
                     dic_one_type = {} # reset
             
-        print('Pairs dict ',pairs_obj)
         if len(pairs_obj)==0:
+            # if there are no matching pairs return 404
             return Response({"error":"No matching pairs"}, status=status.HTTP_404_NOT_FOUND)
 
-            # if v>=2: # if there's a count of more than one
-            #     single_type = Sock.objects.filter(type=k) # this gets a color where there's more than one sock
-            #     print(k) # blue
-            #     match_ids = [s.id for s in single_type] # this is the list of ids we want, but all of them. [4,5]
-            #     pairs_dic[k] = match_ids
-                # do something next that chunks that into pairs 
-                # then builds the ids and pairs into a json object to pass to Pairs, I think.
-                # I think I can build a json object and then "deserialize" it with the Pair serializer.
-                # https://www.adamsmith.haus/python/answers/how-to-create-a-json-object-in-python
-                # not sure this one is useful but https://stackoverflow.com/questions/57699169/django-drf-how-to-deserialize-an-instance-that-requires-a-foreign-key
-                # https://www.django-rest-framework.org/api-guide/serializers/#deserializing-objects
-                # Do I need the pairs model for this to work? I'm thinking maybe yes, since Socks isn't in the right format/has different fields!
-                # Oooh, I think this approach also validates the JSONField I use. Need to research that a little more.
+        # turn the dictionary into a JSON object
         json_dump = json.dumps(pairs_obj)
         pairs = json.loads(json_dump)
-        #pairs = JSONParser().parse(json_object)
+        # here, using the deserializing function of DRF serializers to convert my JSON object back to a complex type
         serializer = PairSerializer(pairs, many=True)  
         return Response(serializer.data, status=status.HTTP_200_OK)
 
