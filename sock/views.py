@@ -13,8 +13,9 @@ class SockList(generics.ListCreateAPIView):
     '''
     List all socks, with optional url filtering, or create a new sock. 
     '''
-    queryset = Sock.objects.all()
-    serializer_class = SockSerializer
+    # Using GenericAPIView to simplify basic GET/POST functionality, with filtering.
+    queryset = Sock.objects.all() 
+    serializer_class = SockSerializer 
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['type', 'hasHole']
 
@@ -28,35 +29,16 @@ class SockList(generics.ListCreateAPIView):
         return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
 
     # Making some assumptions that attempting other methods returns 405 - not sure 
-    # how to implement that explicitly with the generic api view. 
+    # how to implement that explicitly within the generic api class view. Had it explicitly implemented
+    # with function based view first, as below.
 
-
-# @api_view(['GET', 'POST'])
-# def sock_list(request):
-#     '''
-#     List all socks, or create a new sock.
-#     '''
-#     if request.method == 'GET':
-#         socks = Sock.objects.all()
-#         serializer = SockSerializer(socks, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-#     elif request.method == 'POST':
-#         serializer = SockSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         error_msg = {'error':'Required field missing'}
-#         return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
-#     else:
-#         # was able to explicitly pass the 405 here, which I liked, but needed to use generic view to get filtering functionality!
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 @api_view(['GET','PUT','PATCH','DELETE'])
 def sock_detail(request, id):
     '''
     Retrieve, update, overwrite, or delete a sock.
     '''
+    # Decided to keep the more verbose function api views here, as I like that I can be exact with error messages and codes.
     try:
         sock = Sock.objects.get(id=id)
     except Sock.DoesNotExist:
@@ -65,8 +47,8 @@ def sock_detail(request, id):
         return Response(error_msg,status=status.HTTP_404_NOT_FOUND)
     
     if request.method == 'GET':
-        serializer = SockSerializer(sock)
-        return Response(serializer.data)
+        serializer = SockSerializer(sock) # convert queryset to Python datatype
+        return Response(serializer.data) # return response object of query data
 
     elif request.method == 'PUT':
         serializer = SockSerializer(sock, data=request.data)
@@ -77,10 +59,10 @@ def sock_detail(request, id):
     
     elif request.method == 'PATCH':
         serializer = SockSerializer(sock, data=request.data, partial=True) # partial is what allows this to be a patch method
-        # I'm a little confused about the error handling in this one. I interpreted it as
-        # if neither type or hasHole are included, return 400. Since I'm allowing for partial and assuming that this means
-        # an empty field is still marked valid, and thus never hitting the second return, I'm catching
-        # this neither conditon by checking the len of request.data to make sure it's not empty. 
+        # I'm a little unclear on the error handling in this one. I interpreted it as
+        # if neither type or hasHole are included (an empty request body), return 400. Including partial=True seems to allow
+        # an empty request body to still be marked valid, so it never hits the second return. I'm catching neither specified
+        # conditon by checking the len of request.data to make sure it's not empty. 
         if serializer.is_valid() and len(request.data) > 0: 
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -92,6 +74,7 @@ def sock_detail(request, id):
         return Response(status=status.HTTP_200_OK)
 
     else:
+        # If another not implemented request is sent, return 405.
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 @api_view(['GET'])
@@ -147,50 +130,14 @@ def pair_list(request):
                 # Do I need the pairs model for this to work? I'm thinking maybe yes, since Socks isn't in the right format/has different fields!
                 # Oooh, I think this approach also validates the JSONField I use. Need to research that a little more.
         json_dump = json.dumps(pairs_obj)
-        json_object = json.loads(json_dump)
+        pairs = json.loads(json_dump)
         #pairs = JSONParser().parse(json_object)
-        serializer = PairSerializer(json_object, many=True)  
-        print(serializer)
-        #print(serializer.data)  
-        #serializer2 = SockSerializer(socks, many=True)
-        #print(serializer2)
-        #print(serializer2.data)
-        #print(SockSerializer)
+        serializer = PairSerializer(pairs, many=True)  
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-
-        # visited = set()
-        # dup = set([x for x in list(types.values()) if x in visited or (visited.add(x) or False)])
-        # print(types)
-        # print(dup)
-        # for t in dup:
-        #     one_type = Sock.objects.filter(type=t)
-        #     if len(one_type)%2 == 0:
-
-        if len(socks) > 1:
-            for i in range(1, len(socks)+1):
-                pass
-                # is there an implementation that doesn't require looping through all of the socks?
-                #current = Sock.objects.get(id=i)
-                #print(Sock.objects.get(id=i).type)
-
-            serializer = SockSerializer(socks, many=True)    
-            return Response(serializer.data, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-
-# class PairsList(generics.ListAPIView):
-#     '''
-#     List any existing pairs of socks.
-#     '''
-#     queryset = Sock.objects.all()
-#     serializer_class = SockSerializer
-#     if len(queryset) > 1:
-#         first = Sock.objects.get(id=1)
-#         print(first)
-#             # sock__type
 
 
         
