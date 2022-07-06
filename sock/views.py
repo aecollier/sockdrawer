@@ -1,3 +1,6 @@
+'''
+This file contains the bulk of my work.
+'''
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 from rest_framework import status
@@ -84,15 +87,15 @@ def pair_list(request):
         # filter for socks without holes
         socks = Sock.objects.filter(hasHole=False)
         
-        # create a dictionary mapping id to color to make sock data easier to manipulate (for me)
-        types = {t.id:t.type for t in socks} 
+        # create a list of sock types
+        types = [t.type for t in socks]
 
         # count how many socks of each type there are
-        counts = Counter(list(types.values()))
-
+        counts = Counter(types)
+        print(counts)
         pairs_obj = [] # a list of pair objects
         dic_one_type = {} # a dictionary representing a pair instance with "type" and "socks" keys
-        id_list = [] # a list of id's in a sock pair
+        id_list = [] # a list of id's in a sock pair, the value of "socks"
 
         for k,v in counts.items():
             if v>=2:

@@ -1,3 +1,6 @@
+'''
+I created these models.
+'''
 from django.db import models
 
 class Sock(models.Model):
