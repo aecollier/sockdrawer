@@ -2,6 +2,7 @@
 Implementation of REST API sock drawer
 
 ## Setup
+These steps are for a POSIX system. 
 First up is to clone the repository:
 ```
 git clone https://github.com/aecollier/sockdrawer.git
@@ -21,7 +22,7 @@ pip install -r requirements.txt
 
 Once pip has finished downloading the dependencies:
 ```
-python manage.py runserver
+python3 manage.py runserver
 ```
 
 And then navigate to `http://127.0.0.1:8000/sock/` and test other endpoints from there!
