@@ -25,3 +25,4 @@ python manage.py runserver
 ```
 
 And then navigate to `http://127.0.0.1:8000/sock/` and test other endpoints from there!
+The app in file "sock" contains the bulk of my code. You'll find most of the API implementation in "views.py", although "models.py" and "serializers.py" have been created as well. 
