@@ -26,4 +26,4 @@ python3 manage.py runserver
 ```
 
 And then navigate to `http://127.0.0.1:8000/sock/` and test other endpoints from there!
-The "sock" file contains the bulk of my code. You'll find most of the API implementation in "views.py", although "models.py", "serializers.py", and "urls.py" have been created as well. 
+The "sock" directory contains the bulk of my code. You'll find most of the API implementation in "views.py", although "models.py", "serializers.py", and "urls.py" have been created as well. 
